@@ -75,3 +75,21 @@ const Box = (props: BoxProps) => {
 - msTransition => -ms-transition
 
 具体代码参考`src/utils/dashCase.tsx`
+
+### TODO 备忘
+
+#### 3. 将 scss 变成 css
+
+支持 & 这种形式的，如：
+
+```json
+.container {
+  '& .box': {
+    color: 'red'
+  }
+}
+```
+
+参考 jss-plugin-nested
+
+#### 4.满足 Facebook 标准：后面的 className 优先级高于前面的 className
