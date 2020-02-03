@@ -51,7 +51,7 @@ const Box = (props: BoxProps) => {
 };
 ```
 
-<img src="http://t16img.yangkeduo.com/mms_static/2020-02-03/18b12e14-8cfd-4cdc-b89d-78cb9b044108.png" width="600px" />
+<img src="https://user-images.githubusercontent.com/8243326/73650745-d2588000-46bd-11ea-89ee-a87aebf96fea.png" width="600px" />
 
 ### 实现
 
