@@ -64,7 +64,7 @@ const Box = (props: BoxProps) => {
 
 具体代码参考`src/utils/hashCode.tsx`
 
-#### 2. 如何将对象形式的样式转为 css 的 style
+#### 2. 如何将对象形式的样式转为横线形式
 
 如`使用示例`，使用的时候，是`backgroundColor: "#ffeb3b"`的格式，而最终渲染在 head 中 stylesheet 需要是`background-color: #ffeb3b`的格式。
 
@@ -78,18 +78,48 @@ const Box = (props: BoxProps) => {
 
 ### TODO 备忘
 
-#### 3. 将 scss 变成 css
+#### 3. 如何挂载 stylesheet
 
-支持 & 这种形式的，如：
+主要分为两种：
+
+- 静态的挂载
+- 跟随 props 动态变化的处理
+
+#### 4. 将 scss 变成 css
+
+支持 & 这种形式的，如需将：
 
 ```json
 .container {
+  color: 'yellow',
   '& .box': {
     color: 'red'
   }
 }
 ```
 
+转化为：
+
+```json
+.container {
+  color: 'yellow'
+};
+.container .box {
+  color: 'red'
+}
+```
+
 参考 jss-plugin-nested
 
-#### 4.满足 Facebook 标准：后面的 className 优先级高于前面的 className
+#### 5. 如何让后面的 className 优先级高于前面的 className
+
+```jsx
+.blue { color: blue; }
+.red { color: red; }
+
+<span class="red blue">
+  Which color will I be?
+</span>
+```
+
+这种情况下，需要 span 显示为 blue 而非 red
