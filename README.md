@@ -89,7 +89,7 @@ const Box = (props: BoxProps) => {
 
 支持 & 这种形式的，如需将：
 
-```json
+```
 .container {
   color: 'yellow',
   '& .box': {
@@ -100,7 +100,7 @@ const Box = (props: BoxProps) => {
 
 转化为：
 
-```json
+```
 .container {
   color: 'yellow'
 };
