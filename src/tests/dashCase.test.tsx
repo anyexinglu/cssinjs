@@ -2,7 +2,7 @@
 
 import { dashCase } from "../utils";
 
-test("hyphenates regular css", () => {
+test("dashCase regular css", () => {
   testSet([
     ["backgroundColor", "background-color"],
     ["fontSize", "font-size"],
@@ -11,7 +11,7 @@ test("hyphenates regular css", () => {
   ]);
 });
 
-test("hyphenates vendor prefixes correctly", () => {
+test("dashCase vendor prefixes correctly", () => {
   testSet([
     ["MozTransition", "-moz-transition"],
     ["msTransition", "-ms-transition"],

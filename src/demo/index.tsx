@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Box from "./Box";
+import Static from "./Static";
 
 const Demo = () => {
   return (
     <div className="Demo">
-      <Box>这是一个很好玩的盒子</Box>
+      <Static>这是一个很好玩的盒子</Static>
     </div>
   );
 };
