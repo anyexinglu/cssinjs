@@ -1,15 +1,26 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Static from "./Static";
-import Dynamic from "./Dynamic";
-// import Code from "./Code";
+import {
+  BrowserRouter as Router,
+  Redirect,
+  Switch,
+  Route
+} from "react-router-dom";
+// import Static from "./Static";
+// import Dynamic from "./Dynamic";
+import Code from "./Code";
+import Test from "./Test";
 
 const Demo = () => {
   return (
     <div className="Demo">
-      <Static>这是一个很好玩的静态盒子</Static>
-      <Dynamic>这是一个很好玩的动态盒子</Dynamic>
-      {/* <Code>这是一个很好玩的动态盒子</Code> */}
+      <Router>
+        <Switch>
+          {/* <Redirect path="/" exact to="/docs/introduction" /> */}
+          <Route path="/" component={Code} />
+          <Route path="/test" component={Test} />
+        </Switch>
+      </Router>
     </div>
   );
 };
