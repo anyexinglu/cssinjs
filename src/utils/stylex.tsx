@@ -1,7 +1,42 @@
 import { hashCode } from "./index";
 import { dashCase } from "./dashCase";
 
-type keyValue = { [innerKey: string]: string | number | keyValue };
+/**
+ * 函数形式的样式，如：
+  {
+    myLabel: props => ({
+      display: 'block',
+      color: props.labelColor,
+      fontWeight: props.fontWeight,
+      fontStyle: props.fontStyle
+    })
+  }
+ */
+type functionStyle = (
+  props: any
+) => {
+  [innerKey: string]: string | number;
+};
+
+/**
+ * 函数形式的样式值，如：
+ *  {
+      myButton: {
+        padding: props => props.spacing
+      }
+ * }
+ */
+type functionVal = (props: any) => string | number;
+
+type staticKeyValue = {
+  [innerKey: string]: string | number | staticKeyValue;
+};
+
+type dynamicKeyValue =
+  | functionStyle
+  | {
+      [innerKey: string]: string | number | functionVal | dynamicKeyValue;
+    };
 
 /**
  * @param key 如 &$static-container p
@@ -73,7 +108,7 @@ const getBlankByIdent = (ident: number) => {
 export const getStyle = (
   componentName: string,
   objStyle: {
-    [cls: string]: { [innerKey: string]: keyValue | string | number };
+    [cls: string]: { [innerKey: string]: staticKeyValue | string | number };
   },
   prefixIdent: number = 0
 ) => {
@@ -102,7 +137,10 @@ export const getStyle = (
 
     let append = "";
     const newVal = Object.keys(val).reduce(
-      (result: { [key: string]: string | number | keyValue }, key: string) => {
+      (
+        result: { [key: string]: string | number | staticKeyValue },
+        key: string
+      ) => {
         const ident = prefixIdent + 1;
 
         let value = val[key];
@@ -171,22 +209,50 @@ export const getStyle = (
 };
 
 export const stylex = {
-  create: (componentName: string, objStyle: { [key: string]: keyValue }) => {
+  create: (
+    componentName: string,
+    objStyle: { [key: string]: staticKeyValue }
+  ) => {
     const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
     const style = document.createElement("style");
     style.innerHTML = stylesheet;
     document.querySelector("head")?.appendChild(style);
 
-    return (...args: (string | false)[]) => {
+    return (...args: (string | false | any)[]) => {
       return args
-        .reduce((result: string[], key: string | false) => {
+        .reduce((result: string[], key: string | false | any) => {
           if (!!key) {
             let hashKey = clsHashMap[key];
             result.push(hashKey);
           }
+
           return result;
         }, [])
         .join(" ");
     };
   }
+  // createDynamic: (
+  //   componentName: string,
+  //   objStyle: { [key: string]: dynamicKeyValue }
+  // ) => {
+  //   const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
+  //   const style = document.createElement("style");
+  //   style.innerHTML = stylesheet;
+  //   document.querySelector("head")?.appendChild(style);
+
+  //   return (...args: (string | false | any)[]) => {
+  //     return args
+  //       .reduce((result: string[], key: string | false | any) => {
+  //         if (key === false || typeof key === "string") {
+  //           if (!!key) {
+  //             let hashKey = clsHashMap[key];
+  //             result.push(hashKey);
+  //           }
+  //         } else if (typeof key === "object") {
+  //         }
+  //         return result;
+  //       }, [])
+  //       .join(" ");
+  //   };
+  // }
 };

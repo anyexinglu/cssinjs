@@ -15,5 +15,5 @@
     "noEmit": true,
     "jsx": "react"
   },
-  "include": ["src", "react-app-env.d.ts", "setupTests.ts"]
+  "include": ["src", "type-declares", "react-app-env.d.ts", "setupTests.ts"]
 }

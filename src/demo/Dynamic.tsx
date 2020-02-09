@@ -1,5 +1,5 @@
 import React from "react";
-import { stylex } from "../utils/stylex";
+// import { stylex } from "../utils/stylex";
 
 interface DynamicProps {
   bgColor?: string;
@@ -7,24 +7,23 @@ interface DynamicProps {
   children?: React.ReactNode;
 }
 
-const styles = stylex.create("dynamic", {
-  wrapper: {
-    color: "red",
-    padding: "10px",
-    backgroundColor: "#ffeb3b"
-  },
-  dynamicContainer: {
-    border: "1px solid #ccc"
-  }
-});
+// reference: https://cssinjs.org/react-jss/?v=v10.0.4#dynamic-values
+// const styles = stylex.createDynamic("dynamic", {
+//   myButton: {
+//     padding: props => props.spacing
+//   },
+//   myLabel: props => ({
+//     display: "block",
+//     color: props.labelColor,
+//     fontWeight: props.fontWeight,
+//     fontStyle: props.fontStyle
+//   })
+// });
 
 const Dynamic = (props: DynamicProps) => {
   const { children } = props;
-  return (
-    <div className={styles("wrapper", "dynamicContainer")}>
-      {children || "这是一个盒子"}
-    </div>
-  );
+  // const classes = styles(props);
+  return <div className={"wrapper"}>{children || "这是一个盒子"}</div>;
 };
 
 export default Dynamic;
