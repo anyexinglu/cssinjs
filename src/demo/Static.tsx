@@ -7,7 +7,7 @@ interface StaticProps {
   children?: React.ReactNode;
 }
 
-const styles = stylex.create({
+const styles = stylex.create("static", {
   wrapper: {
     color: "red",
     padding: "10px",

@@ -12,6 +12,7 @@ type keyValue = { [innerKey: string]: string | number | keyValue };
  */
 const dashNestedKey = (
   key: string,
+  componentName: string,
   hash: number,
   hashCls: string,
   clsHashMap: {
@@ -21,19 +22,19 @@ const dashNestedKey = (
   // $left -> .left-46670517
   return key
     .replace(/\$([0-9a-zA-Z]*)/g, item => {
-      const dotItem = item.replace(/\$/g, ".");
-      if (item && !item.includes(`-${hash}`)) {
+      const dotItem = item.replace(/\$/g, "." + componentName + "-");
+      if (item && !item.includes(`_${hash}`)) {
         let itemKey = item.replace(/\$/g, "");
-        clsHashMap[itemKey] = itemKey + `-${hash}`;
-        return dotItem + `-${hash}`;
+        clsHashMap[itemKey] = itemKey + `_${hash}`;
+        return dotItem + `_${hash}`;
       }
       return dotItem;
     })
     .replace(/&/g, hashCls.startsWith(".") ? hashCls : `.${hashCls}`)
     .split(" ")
     .map((item: string) =>
-      item.includes(".") && !item.includes(`-${hash}`)
-        ? item + `-${hash}`
+      item.includes(".") && !item.includes(`_${hash}`)
+        ? componentName + "-" + item + `_${hash}`
         : item
     )
     .join(" ");
@@ -49,7 +50,7 @@ const transformStyleValue = (value: string | number, hash: number) => {
     .replace(/"/g, "")
     .replace(/\$([0-9a-zA-Z]*)/g, item => {
       const dotItem = item.replace(/\$/g, "");
-      return dotItem + "-" + hash;
+      return dotItem + "_" + hash;
     });
 };
 
@@ -70,6 +71,7 @@ const getBlankByIdent = (ident: number) => {
  * （2）value：去掉单双引号
  */
 export const getStyle = (
+  componentName: string,
   objStyle: {
     [cls: string]: { [innerKey: string]: keyValue | string | number };
   },
@@ -83,7 +85,18 @@ export const getStyle = (
     const isKeyFrames = cls.includes("@");
     const noHash = cls.includes(".") || cls.includes("%");
     const val = objStyle[cls];
-    const hashCls = noHash ? cls : cls + "-" + hash;
+    // const hashCls = noHash
+    //   ? cls
+    //   : isKeyFrames
+    //   ? cls + "-" + hash
+    //   : componentName + "-" + cls + "-" + hash;
+    let hashCls = cls;
+    if (!noHash) {
+      hashCls = cls + "_" + hash;
+      if (!isKeyFrames) {
+        hashCls = componentName + "-" + hashCls;
+      }
+    }
 
     stylesheet += (noHash || isKeyFrames ? "" : ".") + `${hashCls} {\n`;
 
@@ -97,6 +110,7 @@ export const getStyle = (
           if (isKeyFrames) {
             const blank = getBlankByIdent(ident);
             const style = getStyle(
+              componentName,
               {
                 [key]: value
               },
@@ -106,9 +120,15 @@ export const getStyle = (
             stylesheet += `${blank}${style}`;
             return result;
           } else {
-            const dashedKey = dashNestedKey(key, hash, hashCls, clsHashMap);
+            const dashedKey = dashNestedKey(
+              key,
+              componentName,
+              hash,
+              hashCls,
+              clsHashMap
+            );
             // 针对子层级，需递归调用 getStyle
-            const style = getStyle({
+            const style = getStyle(componentName, {
               [dashedKey]: value
             }).stylesheet;
 
@@ -151,8 +171,8 @@ export const getStyle = (
 };
 
 export const stylex = {
-  create: (objStyle: { [key: string]: keyValue }) => {
-    const { stylesheet, clsHashMap } = getStyle(objStyle);
+  create: (componentName: string, objStyle: { [key: string]: keyValue }) => {
+    const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
     const style = document.createElement("style");
     style.innerHTML = stylesheet;
     document.querySelector("head")?.appendChild(style);

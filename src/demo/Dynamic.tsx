@@ -7,7 +7,7 @@ interface DynamicProps {
   children?: React.ReactNode;
 }
 
-const styles = stylex.create({
+const styles = stylex.create("dynamic", {
   wrapper: {
     color: "red",
     padding: "10px",

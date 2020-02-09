@@ -2,8 +2,10 @@
 
 import { getStyle } from "../utils";
 
+const componentName = "input";
+
 test("getStyle should work", () => {
-  const { stylesheet, clsHashMap } = getStyle({
+  const { stylesheet, clsHashMap } = getStyle(componentName, {
     wrapper: {
       color: "red",
       padding: "10px",
@@ -57,47 +59,47 @@ test("getStyle should work", () => {
     //   border: "1px solid #ccc"
     // }
   });
-  expect(stylesheet).toBe(`.wrapper-46670517 {
+  expect(stylesheet).toBe(`.input-wrapper_46670517 {
   color: red;
   padding: 10px;
   background-color: #ffeb3b;
 }
-.wrapper-46670517 p {
+.input-wrapper_46670517 p {
   color: yellow;
 }
-.wrapper-46670517 p span {
+.input-wrapper_46670517 p span {
   color: #a00;
 }
-.wrapper-46670517.left-46670517, .wrapper-46670517.right-46670517 {
+.input-wrapper_46670517.input-left_46670517, .input-wrapper_46670517.input-right_46670517 {
   height: 100%;
   width: 0;
 }
-.wrapper-46670517 svg.iconSuffix-46670517 {
+.input-wrapper_46670517 svg.input-iconSuffix_46670517 {
   vertical-align: middle;
 }
-.wrapper-46670517 .inner-46670517 {
+.input-wrapper_46670517 .input-inner_46670517 {
   color: gray;
 }
-.wrapper-46670517.staticContainer-46670517 {
+.input-wrapper_46670517.input-staticContainer_46670517 {
   padding: 15px;
 }
-.wrapper-46670517.staticContainer-46670517 span {
+.input-wrapper_46670517.input-staticContainer_46670517 span {
   color: red;
 }
-.wrapper-46670517.staticContainer-46670517 p {
+.input-wrapper_46670517.input-staticContainer_46670517 p {
   color: blue;
 }
-.wrapper-46670517.staticContainer-46670517.mine-46670517 {
+.input-wrapper_46670517.input-staticContainer_46670517.input-mine_46670517 {
   color: #000;
 }
-.wrapper-46670517.staticContainer-46670517.mine-46670517:not(.test-46670517) > span {
+.input-wrapper_46670517.input-staticContainer_46670517.input-mine_46670517:not(.input-test_46670517) > span {
   color: orange;
 }
-.wrapper-46670517, .wrapper-46670517:hover {
+.input-wrapper_46670517, .input-wrapper_46670517:hover {
   color: green;
-  animation: transferHighlightIn-46670517 1s;
+  animation: transferHighlightIn_46670517 1s;
 }
-@keyframes transferHighlightIn-46670517 {
+@keyframes transferHighlightIn_46670517 {
   0% {
     background: bae7ff;
     color: red;
