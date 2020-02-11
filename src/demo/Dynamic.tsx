@@ -18,12 +18,24 @@ const getStyles = stylex.createDynamic("dynamic", {
   })
 });
 
+const getOppositeColor = (color?: string) => (color === "red" ? "blue" : "red");
+
 const Dynamic = (props: DynamicProps) => {
   const { children } = props;
-  const styles = getStyles(props);
+  const [color, setColor] = React.useState(props.color);
+
+  const styles = getStyles({
+    ...props,
+    color,
+    bgColor: getOppositeColor(color)
+  });
+
   return (
-    <div className={styles("wrapper", "myBox")}>
-      {children || "这是一个盒子"}
+    <div>
+      <button onClick={() => setColor(getOppositeColor)}>切前景/背景色</button>
+      <div className={styles("wrapper", "myBox")}>
+        {children || "这是一个盒子"}
+      </div>
     </div>
   );
 };
