@@ -14,13 +14,11 @@ import Test from "./Test";
 const Demo = () => {
   return (
     <div className="Demo">
-      <Router>
-        <Switch>
-          {/* <Redirect path="/" exact to="/docs/introduction" /> */}
-          <Route path="/" component={Code} />
-          <Route path="/test" component={Test} />
-        </Switch>
-      </Router>
+      <Static>这是一个很好玩的静态盒子</Static>
+      <Dynamic color="red" bgColor="blue">
+        这是一个很好玩的动态盒子
+      </Dynamic>
+      {/* <Code>这是一个很好玩的动态盒子</Code> */}
     </div>
   );
 };

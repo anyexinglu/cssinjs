@@ -93,6 +93,57 @@ const getBlankByIdent = (ident: number) => {
   return new Array(ident).fill("  ").join("");
 };
 
+export const stylex = {
+  create: (
+    componentName: string,
+    objStyle: { [key: string]: staticKeyValue }
+  ) => {
+    const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
+    return attachStyle({ stylesheet, clsHashMap });
+  },
+  createDynamic: (
+    componentName: string,
+    objStyle: { [key: string]: dynamicKeyValue }
+  ) => {
+    return (props: any) => {
+      const { stylesheet, clsHashMap } = getStyle(
+        componentName,
+        objStyle,
+        undefined,
+        props
+      );
+      return attachStyle({ stylesheet, clsHashMap });
+    };
+  }
+};
+
+const attachStyle = ({
+  stylesheet,
+  clsHashMap
+}: {
+  stylesheet: string;
+  clsHashMap: {
+    [key: string]: string;
+  };
+}) => {
+  const style = document.createElement("style");
+  style.innerHTML = stylesheet;
+  document.querySelector("head")?.appendChild(style);
+
+  return (...args: (string | false | any)[]) => {
+    return args
+      .reduce((result: string[], key: string | false | any) => {
+        if (!!key) {
+          let hashKey = clsHashMap[key];
+          result.push(hashKey);
+        }
+
+        return result;
+      }, [])
+      .join(" ");
+  };
+};
+
 /**
  * 转stylesheet的规则：
  * value为对象，说明不是样式属性 而是子层级。
@@ -108,9 +159,12 @@ const getBlankByIdent = (ident: number) => {
 export const getStyle = (
   componentName: string,
   objStyle: {
-    [cls: string]: { [innerKey: string]: staticKeyValue | string | number };
+    [cls: string]:
+      | dynamicKeyValue
+      | { [innerKey: string]: staticKeyValue | string | number };
   },
-  prefixIdent: number = 0
+  prefixIdent: number = 0,
+  props?: any
 ) => {
   const hash = hashCode();
   let clsHashMap: { [key: string]: string } = {};
@@ -119,7 +173,12 @@ export const getStyle = (
   Object.keys(objStyle).reduce((result: string, cls: string) => {
     const isKeyFrames = cls.includes("@");
     const noHash = cls.includes(".") || cls.includes("%");
-    const val = objStyle[cls];
+    let dynamicVal = objStyle[cls];
+    let val =
+      props && typeof dynamicVal === "function"
+        ? dynamicVal(props)
+        : dynamicVal;
+
     // const hashCls = noHash
     //   ? cls
     //   : isKeyFrames
@@ -143,7 +202,12 @@ export const getStyle = (
       ) => {
         const ident = prefixIdent + 1;
 
-        let value = val[key];
+        let value = (val as any)[key];
+
+        if (props && typeof value === "function") {
+          value = value(props);
+        }
+
         if (typeof value === "object") {
           if (isKeyFrames) {
             const blank = getBlankByIdent(ident);
@@ -206,53 +270,4 @@ export const getStyle = (
     stylesheet,
     clsHashMap
   };
-};
-
-export const stylex = {
-  create: (
-    componentName: string,
-    objStyle: { [key: string]: staticKeyValue }
-  ) => {
-    const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
-    const style = document.createElement("style");
-    style.innerHTML = stylesheet;
-    document.querySelector("head")?.appendChild(style);
-
-    return (...args: (string | false | any)[]) => {
-      return args
-        .reduce((result: string[], key: string | false | any) => {
-          if (!!key) {
-            let hashKey = clsHashMap[key];
-            result.push(hashKey);
-          }
-
-          return result;
-        }, [])
-        .join(" ");
-    };
-  }
-  // createDynamic: (
-  //   componentName: string,
-  //   objStyle: { [key: string]: dynamicKeyValue }
-  // ) => {
-  //   const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
-  //   const style = document.createElement("style");
-  //   style.innerHTML = stylesheet;
-  //   document.querySelector("head")?.appendChild(style);
-
-  //   return (...args: (string | false | any)[]) => {
-  //     return args
-  //       .reduce((result: string[], key: string | false | any) => {
-  //         if (key === false || typeof key === "string") {
-  //           if (!!key) {
-  //             let hashKey = clsHashMap[key];
-  //             result.push(hashKey);
-  //           }
-  //         } else if (typeof key === "object") {
-  //         }
-  //         return result;
-  //       }, [])
-  //       .join(" ");
-  //   };
-  // }
 };
