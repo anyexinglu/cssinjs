@@ -155,6 +155,7 @@ const attachStyle = ({
  * 2. 针对样式属性
  * （1）key：驼峰转 - 横线
  * （2）value：去掉单双引号
+ * 3. 针对值为函数类型（带props），只需要执行函数拿到结果即可
  */
 export const getStyle = (
   componentName: string,
