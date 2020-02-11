@@ -15,9 +15,8 @@ const Demo = () => {
   return (
     <div className="Demo">
       <Static>这是一个很好玩的静态盒子</Static>
-      <Dynamic color="red" bgColor="blue">
-        这是一个很好玩的动态盒子
-      </Dynamic>
+      <Dynamic color="red">这是一个很好玩的动态盒子</Dynamic>
+      <Dynamic color="blue">这是一个很好玩的动态盒子</Dynamic>
       {/* <Code>这是一个很好玩的动态盒子</Code> */}
     </div>
   );
