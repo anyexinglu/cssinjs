@@ -7,24 +7,42 @@ interface DynamicProps {
   children?: React.ReactNode;
 }
 
-// reference: https://cssinjs.org/react-jss/?v=v10.0.4#dynamic-values
-const getStyles = stylex.createDynamic("dynamic", {
-  wrapper: {
-    background: (props: Partial<DynamicProps>) => props.bgColor || ""
-  },
-  myBox: (props: Partial<DynamicProps>) => ({
-    display: "block",
-    color: props.color || ""
-  })
-});
-
 const getOppositeColor = (color?: string) => (color === "red" ? "blue" : "red");
+
+const returnEmptyStr = () => "";
+
+const useDynamicStyle = (props: any) => {
+  const [styles, setStyles] = React.useState<(...args: any[]) => string>(
+    () => returnEmptyStr
+  );
+  const propsStr = JSON.stringify(props);
+
+  React.useEffect(() => {
+    const getStyles = stylex.createDynamic("dynamic", {
+      wrapper: {
+        background: (props: Partial<DynamicProps>) => props.bgColor || ""
+      },
+      myBox: (props: Partial<DynamicProps>) => ({
+        display: "block",
+        color: props.color || ""
+      })
+    });
+    const newStyles = getStyles(props);
+    console.log("...newStyles", newStyles);
+    setStyles(() => newStyles);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [propsStr, setStyles]);
+
+  console.log("...styles", styles);
+  return styles;
+};
 
 const Dynamic = (props: DynamicProps) => {
   const { children } = props;
   const [color, setColor] = React.useState(props.color);
 
-  const styles = getStyles({
+  // reference: https://cssinjs.org/react-jss/?v=v10.0.4#dynamic-values
+  const styles = useDynamicStyle({
     ...props,
     color,
     bgColor: getOppositeColor(color)

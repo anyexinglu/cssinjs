@@ -48,7 +48,7 @@ type dynamicKeyValue =
 const dashNestedKey = (
   key: string,
   componentName: string,
-  hash: number,
+  hash: string,
   hashCls: string,
   clsHashMap: {
     [key: string]: string;
@@ -80,7 +80,7 @@ const dashNestedKey = (
  * @param hash 如 46670517
  * @return 如 transferHighlightIn-46670517 1s
  */
-const transformStyleValue = (value: string | number, hash: number) => {
+const transformStyleValue = (value: string | number, hash: string) => {
   return String(value)
     .replace(/"/g, "")
     .replace(/\$([0-9a-zA-Z]*)/g, item => {
@@ -92,6 +92,15 @@ const transformStyleValue = (value: string | number, hash: number) => {
 const getBlankByIdent = (ident: number) => {
   return new Array(ident).fill("  ").join("");
 };
+
+const getId = (() => {
+  let id = 1;
+
+  return () => {
+    id++;
+    return id;
+  };
+})();
 
 export const stylex = {
   create: (
@@ -105,12 +114,15 @@ export const stylex = {
     componentName: string,
     objStyle: { [key: string]: dynamicKeyValue }
   ) => {
+    const id = getId();
+    console.log("...createDynamic", id);
     return (props: any) => {
       const { stylesheet, clsHashMap } = getStyle(
         componentName,
         objStyle,
         undefined,
-        props
+        props,
+        id
       );
       return attachStyle({ stylesheet, clsHashMap });
     };
@@ -165,9 +177,10 @@ export const getStyle = (
       | { [innerKey: string]: staticKeyValue | string | number };
   },
   prefixIdent: number = 0,
-  props?: any
+  props?: any,
+  id?: number
 ) => {
-  const hash = hashCode();
+  const hash = hashCode() + (id ? `-${id}` : "");
   let clsHashMap: { [key: string]: string } = {};
   let stylesheet = "";
 
