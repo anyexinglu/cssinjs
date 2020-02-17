@@ -94,7 +94,7 @@ const getBlankByIdent = (ident: number) => {
 };
 
 const getId = (() => {
-  let id = 1;
+  let id = 0;
 
   return () => {
     id++;
@@ -108,7 +108,7 @@ export const stylex = {
     objStyle: { [key: string]: staticKeyValue }
   ) => {
     const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
-    return attachStyle({ stylesheet, clsHashMap });
+    return attachStyle({ stylesheet, metaName: componentName, clsHashMap });
   },
   createDynamic: (
     componentName: string,
@@ -116,6 +116,31 @@ export const stylex = {
   ) => {
     const id = getId();
     console.log("...createDynamic", id);
+    const initialGetStyles = (props: any) => {
+      const { stylesheet, clsHashMap } = getStyle(
+        componentName,
+        objStyle,
+        undefined,
+        props,
+        id
+      );
+      return attachStyle({
+        stylesheet,
+        metaName: componentName + "-" + id,
+        clsHashMap
+      });
+    };
+    return {
+      id,
+      initialGetStyles
+    };
+  },
+  updateDynamic: (
+    componentName: string,
+    id: number,
+    objStyle: { [key: string]: dynamicKeyValue }
+  ) => {
+    console.log("...updateDynamic", id);
     return (props: any) => {
       const { stylesheet, clsHashMap } = getStyle(
         componentName,
@@ -124,21 +149,60 @@ export const stylex = {
         props,
         id
       );
-      return attachStyle({ stylesheet, clsHashMap });
+      return updateStyle({
+        stylesheet,
+        metaName: componentName + "-" + id,
+        clsHashMap
+      });
     };
   }
 };
 
-const attachStyle = ({
+const updateStyle = ({
   stylesheet,
+  metaName,
   clsHashMap
 }: {
   stylesheet: string;
+  metaName: string;
+  clsHashMap: {
+    [key: string]: string;
+  };
+}) => {
+  const style = Array.from(document.styleSheets).find(
+    item => (item.ownerNode as any).dataset.meta === metaName
+  )?.ownerNode;
+
+  style && ((style as any).innerHTML = stylesheet);
+
+  return (...args: (string | false | any)[]) => {
+    return args
+      .reduce((result: string[], key: string | false | any) => {
+        if (!!key) {
+          let hashKey = clsHashMap[key];
+          result.push(hashKey);
+        }
+
+        return result;
+      }, [])
+      .join(" ");
+  };
+};
+
+const attachStyle = ({
+  stylesheet,
+  metaName,
+  clsHashMap
+}: {
+  stylesheet: string;
+  metaName: string;
   clsHashMap: {
     [key: string]: string;
   };
 }) => {
   const style = document.createElement("style");
+  style.setAttribute("data-cij", "");
+  style.setAttribute("data-meta", metaName);
   style.innerHTML = stylesheet;
   document.querySelector("head")?.appendChild(style);
 

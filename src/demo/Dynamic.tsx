@@ -9,24 +9,28 @@ interface DynamicProps {
 
 const getOppositeColor = (color?: string) => (color === "red" ? "blue" : "red");
 
-const returnEmptyStr = () => "";
-
 const useDynamicStyle = (props: any) => {
-  const [styles, setStyles] = React.useState<(...args: any[]) => string>(
-    () => returnEmptyStr
-  );
+  const rules = {
+    wrapper: {
+      background: (props: Partial<DynamicProps>) => props.bgColor || ""
+    },
+    myBox: (props: Partial<DynamicProps>) => ({
+      display: "block",
+      color: props.color || ""
+    })
+  };
+
+  const idRef = React.useRef(0);
+
+  const [styles, setStyles] = React.useState<(...args: any[]) => string>(() => {
+    const { initialGetStyles, id } = stylex.createDynamic("dynamic", rules);
+    idRef.current = id;
+    return initialGetStyles(props);
+  });
   const propsStr = JSON.stringify(props);
 
   React.useEffect(() => {
-    const getStyles = stylex.createDynamic("dynamic", {
-      wrapper: {
-        background: (props: Partial<DynamicProps>) => props.bgColor || ""
-      },
-      myBox: (props: Partial<DynamicProps>) => ({
-        display: "block",
-        color: props.color || ""
-      })
-    });
+    const getStyles = stylex.updateDynamic("dynamic", idRef.current, rules);
     const newStyles = getStyles(props);
     console.log("...newStyles", newStyles);
     setStyles(() => newStyles);
