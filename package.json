@@ -12,9 +12,7 @@
     "@types/react-dom": "^16.9.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-sandpack": "^1.0.0",
     "react-scripts": "3.3.1",
-    "react-smooshpack": "^0.0.62",
     "typescript": "~3.7.2"
   },
   "scripts": {
