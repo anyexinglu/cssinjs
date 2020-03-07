@@ -1,7 +1,42 @@
 import { hashCode } from "./index";
 import { dashCase } from "./dashCase";
 
-type keyValue = { [innerKey: string]: string | number | keyValue };
+/**
+ * 函数形式的样式，如：
+  {
+    myLabel: props => ({
+      display: 'block',
+      color: props.labelColor,
+      fontWeight: props.fontWeight,
+      fontStyle: props.fontStyle
+    })
+  }
+ */
+type functionStyle = (
+  props: any
+) => {
+  [innerKey: string]: string | number;
+};
+
+/**
+ * 函数形式的样式值，如：
+ *  {
+      myButton: {
+        padding: props => props.spacing
+      }
+ * }
+ */
+type functionVal = (props: any) => string | number;
+
+type staticKeyValue = {
+  [innerKey: string]: string | number | staticKeyValue;
+};
+
+type dynamicKeyValue =
+  | functionStyle
+  | {
+      [innerKey: string]: string | number | functionVal | dynamicKeyValue;
+    };
 
 /**
  * @param key 如 &$static-container p
@@ -13,7 +48,7 @@ type keyValue = { [innerKey: string]: string | number | keyValue };
 const dashNestedKey = (
   key: string,
   componentName: string,
-  hash: number,
+  hash: string,
   hashCls: string,
   clsHashMap: {
     [key: string]: string;
@@ -45,7 +80,7 @@ const dashNestedKey = (
  * @param hash 如 46670517
  * @return 如 transferHighlightIn-46670517 1s
  */
-const transformStyleValue = (value: string | number, hash: number) => {
+const transformStyleValue = (value: string | number, hash: string) => {
   return String(value)
     .replace(/"/g, "")
     .replace(/\$([0-9a-zA-Z]*)/g, item => {
@@ -56,6 +91,133 @@ const transformStyleValue = (value: string | number, hash: number) => {
 
 const getBlankByIdent = (ident: number) => {
   return new Array(ident).fill("  ").join("");
+};
+
+const getId = (() => {
+  let id = 0;
+
+  return () => {
+    id++;
+    return id;
+  };
+})();
+
+export const stylex = {
+  create: (
+    componentName: string,
+    objStyle: { [key: string]: staticKeyValue }
+  ) => {
+    const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
+    return attachStyle({ stylesheet, metaName: componentName, clsHashMap });
+  },
+  createDynamic: (
+    componentName: string,
+    objStyle: { [key: string]: dynamicKeyValue }
+  ) => {
+    const id = getId();
+    console.log("...createDynamic", id);
+    const initialGetStyles = (props: any) => {
+      const { stylesheet, clsHashMap } = getStyle(
+        componentName,
+        objStyle,
+        undefined,
+        props,
+        id
+      );
+      return attachStyle({
+        stylesheet,
+        metaName: componentName + "-" + id,
+        clsHashMap
+      });
+    };
+    return {
+      id,
+      initialGetStyles
+    };
+  },
+  updateDynamic: (
+    componentName: string,
+    id: number,
+    objStyle: { [key: string]: dynamicKeyValue }
+  ) => {
+    console.log("...updateDynamic", id);
+    return (props: any) => {
+      const { stylesheet, clsHashMap } = getStyle(
+        componentName,
+        objStyle,
+        undefined,
+        props,
+        id
+      );
+      return updateStyle({
+        stylesheet,
+        metaName: componentName + "-" + id,
+        clsHashMap
+      });
+    };
+  }
+};
+
+const updateStyle = ({
+  stylesheet,
+  metaName,
+  clsHashMap
+}: {
+  stylesheet: string;
+  metaName: string;
+  clsHashMap: {
+    [key: string]: string;
+  };
+}) => {
+  const style = Array.from(document.styleSheets).find(
+    item => (item.ownerNode as any).dataset.meta === metaName
+  )?.ownerNode;
+
+  style && ((style as any).innerHTML = stylesheet);
+
+  return (...args: (string | false | any)[]) => {
+    return args
+      .reduce((result: string[], key: string | false | any) => {
+        if (!!key) {
+          let hashKey = clsHashMap[key];
+          result.push(hashKey);
+        }
+
+        return result;
+      }, [])
+      .join(" ");
+  };
+};
+
+const attachStyle = ({
+  stylesheet,
+  metaName,
+  clsHashMap
+}: {
+  stylesheet: string;
+  metaName: string;
+  clsHashMap: {
+    [key: string]: string;
+  };
+}) => {
+  const style = document.createElement("style");
+  style.setAttribute("data-cij", "");
+  style.setAttribute("data-meta", metaName);
+  style.innerHTML = stylesheet;
+  document.querySelector("head")?.appendChild(style);
+
+  return (...args: (string | false | any)[]) => {
+    return args
+      .reduce((result: string[], key: string | false | any) => {
+        if (!!key) {
+          let hashKey = clsHashMap[key];
+          result.push(hashKey);
+        }
+
+        return result;
+      }, [])
+      .join(" ");
+  };
 };
 
 /**
@@ -69,22 +231,32 @@ const getBlankByIdent = (ident: number) => {
  * 2. 针对样式属性
  * （1）key：驼峰转 - 横线
  * （2）value：去掉单双引号
+ * 3. 针对值为函数类型（带props），只需要执行函数拿到结果即可
  */
 export const getStyle = (
   componentName: string,
   objStyle: {
-    [cls: string]: { [innerKey: string]: keyValue | string | number };
+    [cls: string]:
+      | dynamicKeyValue
+      | { [innerKey: string]: staticKeyValue | string | number };
   },
-  prefixIdent: number = 0
+  prefixIdent: number = 0,
+  props?: any,
+  id?: number
 ) => {
-  const hash = hashCode();
+  const hash = hashCode() + (id ? `-${id}` : "");
   let clsHashMap: { [key: string]: string } = {};
   let stylesheet = "";
 
   Object.keys(objStyle).reduce((result: string, cls: string) => {
     const isKeyFrames = cls.includes("@");
     const noHash = cls.includes(".") || cls.includes("%");
-    const val = objStyle[cls];
+    let dynamicVal = objStyle[cls];
+    let val =
+      props && typeof dynamicVal === "function"
+        ? dynamicVal(props)
+        : dynamicVal;
+
     // const hashCls = noHash
     //   ? cls
     //   : isKeyFrames
@@ -102,10 +274,18 @@ export const getStyle = (
 
     let append = "";
     const newVal = Object.keys(val).reduce(
-      (result: { [key: string]: string | number | keyValue }, key: string) => {
+      (
+        result: { [key: string]: string | number | staticKeyValue },
+        key: string
+      ) => {
         const ident = prefixIdent + 1;
 
-        let value = val[key];
+        let value = (val as any)[key];
+
+        if (props && typeof value === "function") {
+          value = value(props);
+        }
+
         if (typeof value === "object") {
           if (isKeyFrames) {
             const blank = getBlankByIdent(ident);
@@ -168,25 +348,4 @@ export const getStyle = (
     stylesheet,
     clsHashMap
   };
-};
-
-export const stylex = {
-  create: (componentName: string, objStyle: { [key: string]: keyValue }) => {
-    const { stylesheet, clsHashMap } = getStyle(componentName, objStyle);
-    const style = document.createElement("style");
-    style.innerHTML = stylesheet;
-    document.querySelector("head")?.appendChild(style);
-
-    return (...args: (string | false)[]) => {
-      return args
-        .reduce((result: string[], key: string | false) => {
-          if (!!key) {
-            let hashKey = clsHashMap[key];
-            result.push(hashKey);
-          }
-          return result;
-        }, [])
-        .join(" ");
-    };
-  }
 };

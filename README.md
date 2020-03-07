@@ -109,7 +109,7 @@ const Box = (props: BoxProps) => {
 主要分为两种：
 
 - 静态的挂载
-- 跟随 props 动态变化的处理
+- 跟随 props 动态变化的处理（TODO：已有增加，需要支持修改/删除）
 
 参考 jss-plugin-nested
 
